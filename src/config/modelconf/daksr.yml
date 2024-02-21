@@ -1,0 +1,87 @@
+optimizer:
+  name: adam
+  lr: 1.0e-3
+  weight_decay: 0
+
+train:
+  trainer: daskr_trainer
+  epoch: 100
+  batch_size: 256
+  kg_batch_size: 8192
+  save_model: true
+  log_loss: true
+  test_step: 1
+  reproducible: true
+  seed: 2023
+  epoch_trans: 50
+  patience: 20
+  distributed: false
+
+  enable_wandb: true
+  tensorboard: true
+
+test:
+  metrics: [recall, ndcg, mrr]
+  k: [5, 10, 20]
+  batch_size: 512
+
+data:
+  type: kg_sequential
+  name: ml-100k
+  filter: true
+  filter_threshold: 300
+  seq_aug: true
+  use_cache: true
+
+model:
+  name: ourshi
+  dropout_rate: 0.1
+  n_layers: 2
+  embedding_size: 64
+  mask_prob: 0.2
+  n_heads: 2
+  max_seq_len: 50
+  forward_kgin: false
+
+  seed: 33
+
+  # === overall ===
+  KCL: true
+  DA: true
+  KGE: false
+
+  # === for dist matrix ===
+  ga_idx: 1       # exponential factor
+  max_depth: 5    # bfs depth limix
+  th_dist: 5      # itemset_embedding dist threshold
+
+  # === KCL ===
+  crate: 0.5      # KCL: replace rate
+  c_th: 3         # KCL: threshold
+  lmd: 0.1        # NCE 
+  tau: 1          # NCE 
+  KCL_kgaug: false # with use KG for aug
+
+  # === DA ===
+  DA_M_mode: dist     # none, dist, ppr, mix, relational_dist, fake
+  DA_att_mode: simple # simple, product, gate
+  ppr_rescale: 10
+  ppr_temperature: 1
+  ppr_mask_value: 0
+  # ppr_topk: 1000
+
+  # === KGE ===
+  KGE_init: false         # KGE for embedding initialization
+  KGE_train_epoch: true   # KG learning while training
+  KGE_itemset: true       # whether use itemset embedding
+
+tune:
+  enable: true
+  hyperparameters: [dropout_rate, embedding_size, batch_size]
+  crate: [0.2, 0.5]
+  dropout_rate: [0.1, 0.3]
+  n_layers: [2, 3]
+  embedding_size: [128, 256]
+  batch_size: [128, 256, 512]
+
+
